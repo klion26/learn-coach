@@ -1,10 +1,10 @@
 {
-  "name": "learn-coach",
+  "name": "mastery-loop",
   "version": "1.0.0",
-  "description": "通用学习教练 Skill：全局骨架 + 分层测验 + 事件驱动复习（认知负荷 / 刻意练习 / SOLO）。兼容 OpenCode、Claude Code、Codex 等所有 SKILL.md agent",
+  "description": "通用学习教练 Skill：全局骨架 + 分层测验 + 事件驱动复习（认知负荷 / 刻意练习 / SOLO）。兼容 OpenCode、Claude Code、Codex 等所有 SKILL.md agent；技能 ID 为 learn-coach",
   "license": "Apache-2.0",
   "bin": {
-    "learn-coach": "bin/install.js"
+    "mastery-loop": "bin/install.js"
   },
   "files": [
     "SKILL.md",
@@ -25,6 +25,7 @@
     "agent-skills",
     "learning",
     "tutoring",
+    "mastery-learning",
     "spaced-repetition",
     "solo-taxonomy",
     "opencode",
@@ -33,12 +34,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/klion26/learn-coach.git"
+    "url": "git+https://github.com/CHANGE_ME/mastery-loop.git"
   },
   "bugs": {
-    "url": "https://github.com/klion26/learn-coach/issues"
+    "url": "https://github.com/CHANGE_ME/mastery-loop/issues"
   },
-  "homepage": "https://github.com/klion26/learn-coach#readme",
+  "homepage": "https://github.com/CHANGE_ME/mastery-loop#readme",
   "scripts": {
     "test": "bash scripts/selftest.sh"
   }

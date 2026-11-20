@@ -2,13 +2,13 @@
 /*
  * learn-coach 安装器（跨 agent）
  *
- *   npx learn-coach                 → 装到 ~/.agents/skills/learn-coach，并软链到已安装的 agent
- *   npx learn-coach --project       → 装到 ./.agents/skills/learn-coach，并软链到项目内 agent 目录
- *   npx learn-coach --link <dir>    → 额外软链到指定技能目录（可重复，用于其他 agent）
- *   npx learn-coach --no-link       → 只装一份，不做任何软链
- *   npx learn-coach --copy          → 用复制代替软链（Windows / 无符号链接权限时）
- *   npx learn-coach --dry-run       → 只打印计划
- *   npx learn-coach --uninstall     → 删除技能与软链（学习数据不动）
+ *   npx mastery-loop                 → 装到 ~/.agents/skills/learn-coach，并软链到已安装的 agent
+ *   npx mastery-loop --project       → 装到 ./.agents/skills/learn-coach，并软链到项目内 agent 目录
+ *   npx mastery-loop --link <dir>    → 额外软链到指定技能目录（可重复，用于其他 agent）
+ *   npx mastery-loop --no-link       → 只装一份，不做任何软链
+ *   npx mastery-loop --copy          → 用复制代替软链（Windows / 无符号链接权限时）
+ *   npx mastery-loop --dry-run       → 只打印计划
+ *   npx mastery-loop --uninstall     → 删除技能与软链（学习数据不动）
  */
 "use strict";
 
@@ -59,7 +59,7 @@ function parseArgs(argv) {
 const args = parseArgs(process.argv.slice(2));
 
 if (args.help) {
-  console.log(`用法：learn-coach [选项]
+  console.log(`用法：mastery-loop [选项]
 
   --project        装到项目的 ./.agents/skills/${SKILL_NAME}，并软链项目内 agent 目录
   --link <dir>     额外软链到指定技能目录（可重复）
@@ -170,7 +170,7 @@ if (args.uninstall) {
   }
   if (fs.existsSync(source)) { fs.rmSync(source, { recursive: true, force: true }); removed.push(source); }
   if (args.dry) { console.log("将删除：\n  " + removed.join("\n  ")); process.exit(0); }
-  console.log(removed.length ? `已删除：\n  ${removed.join("\n  ")}` : "没有发现已安装的 learn-coach");
+  console.log(removed.length ? `已删除：\n  ${removed.join("\n  ")}` : "没有发现已安装的 learn-coach（mastery-loop）");
   console.log("学习数据仍在：~/.local/share/learn-coach（如不再需要可手动删除）");
   process.exit(0);
 }
@@ -203,7 +203,7 @@ if (pkgRoot !== source) {
 
 const results = links.map((l) => ({ ...l, result: linkTo(l.dir, source) }));
 
-console.log(`已安装 ${SKILL_NAME} → ${source}`);
+console.log(`已安装 ${SKILL_NAME}（包 mastery-loop）→ ${source}`);
 if (results.length) {
   console.log("\n已接入：");
   for (const r of results) {

@@ -10,6 +10,8 @@
 2. **记录到层级，不记录 pass/fail**：`unistructural → multistructural → relational → extended abstract` 每一跳都落盘，中断后从那一层往上接，不重讲。
 3. **复习按事件驱动**：时钟是"过了几关"，不是"过了几天"——节奏断续时不会堆成复习大会。
 
+> **名字对照**：npm 包名 `mastery-loop`（`npx mastery-loop` 安装）；技能 ID `learn-coach`（agent 里 `@learn-coach` 调用）。两者刻意分离：包名只管分发，ID 由目录名决定。
+
 License: [Apache-2.0](LICENSE)
 
 ## 支持的 agent
@@ -38,13 +40,13 @@ License: [Apache-2.0](LICENSE)
 ### npx（推荐）
 
 ```sh
-npx learn-coach                       # 装到 ~/.agents/skills，并软链到检测到的 agent
-npx learn-coach --link ~/.workbuddy/skills   # 额外接入其他 agent（可重复）
-npx learn-coach --project             # 装到项目内：./.agents/skills + ./.opencode、./.claude、./.codex
-npx learn-coach --no-link             # 只装一份，不软链
-npx learn-coach --copy                # 用复制代替软链（Windows / 无符号链接权限）
-npx learn-coach --dry-run             # 只看计划
-npx learn-coach --uninstall           # 删除技能与软链（学习数据不动）
+npx mastery-loop                       # 装到 ~/.agents/skills，并软链到检测到的 agent
+npx mastery-loop --link ~/.workbuddy/skills   # 额外接入其他 agent（可重复）
+npx mastery-loop --project             # 装到项目内：./.agents/skills + ./.opencode、./.claude、./.codex
+npx mastery-loop --no-link             # 只装一份，不软链
+npx mastery-loop --copy                # 用复制代替软链（Windows / 无符号链接权限）
+npx mastery-loop --dry-run             # 只看计划
+npx mastery-loop --uninstall           # 删除技能与软链（学习数据不动）
 ```
 
 安装器会做四件事：复制技能文件 → 给脚本加执行位 → 对每个已安装的 agent 建软链 → 打印自测命令。重复执行即升级，软链会保持指向同一份源。
@@ -126,10 +128,10 @@ learn-coach/
 ### npm
 
 ```sh
-npm publish        # 包名 learn-coach，发布前请确认是否可用
+npm publish        # 包名 mastery-loop
 ```
 
-`package.json` 的 `bin` 指向 `bin/install.js`，`npx learn-coach` 即可用。（仓库地址里的 `CHANGE_ME` 记得替换。）
+`package.json` 的 `bin` 指向 `bin/install.js`，`npx mastery-loop` 即可用。（仓库地址里的 `CHANGE_ME` 记得替换。）
 
 ### HTTP catalog（OpenCode 专属能力）
 
