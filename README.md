@@ -2,13 +2,13 @@
 
 一个通用的 **SKILL.md 技能**：把"我想学 X"变成一条**可验证**的学习路径——全局骨架 → 单块循环 → 分层测验 → 跨块整合 → 事件驱动复习。
 
-不绑定具体 agent。OpenCode、Claude Code、Codex，以及任何读取 `SKILL.md` 的工具（Cline、workbuddy、自建 agent…）都能用，靠软链接一份内容分发到各处。
+不绑定具体 agent。OpenCode、Claude Code、Codex，以及任何读取 `SKILL.md` 的工具（Cline、WorkBuddy、自建 agent…）都能用，靠软链接一份内容分发到各处。
 
-它不追求"讲得更清楚"，而是靠三条硬机制：
+不追求"讲得更清楚"，靠三条机制保证效果：
 
 1. **没有测试就没有进度**：每个知识点要通过分层测验（SOLO）才前进；答案对但理由错不算过。
 2. **记录到层级，不记录 pass/fail**：`unistructural → multistructural → relational → extended abstract` 每一跳都落盘，中断后从那一层往上接，不重讲。
-3. **复习按事件驱动**：时钟是"过了几关"，不是"过了几天"——节奏断续时不会堆成复习大会。
+3. **复习按事件驱动**：按关卡而非时间为节奏——节奏断续时不会堆成复习大会。
 
 > **名字对照**：npm 包名 `mastery-loop`（`npx mastery-loop` 安装）；技能 ID `learn-coach`（agent 里 `@learn-coach` 调用）。两者刻意分离：包名只管分发，ID 由目录名决定。
 
@@ -18,11 +18,11 @@ License: [Apache-2.0](LICENSE)
 
 | Agent | 技能目录 | 安装方式 |
 | --- | --- | --- |
-| 通用（默认源） | `~/.agents/skills/learn-coach` | 总是装在这里 |
+| 通用（默认源） | `~/.agents/skills/learn-coach` | 安装在这里 |
 | OpenCode | `${XDG_CONFIG_HOME:-~/.config}/opencode/skills` | 检测到目录即自动软链 |
 | Claude Code | `~/.claude/skills` | 检测到目录即自动软链 |
 | Codex | `${CODEX_HOME:-~/.codex}/skills` | 检测到目录即自动软链 |
-| 其他（workbuddy / Cline / 自建） | 由你指定 | `--link <它的技能目录>` |
+| 其他（WorkBuddy / Cline / 自建） | 由你指定 | `--link <它的技能目录>` |
 
 "检测到"指该 agent 的根目录存在（如 `~/.claude`）。没装的工具不会凭空建目录。
 
@@ -49,7 +49,7 @@ npx mastery-loop --dry-run             # 只看计划
 npx mastery-loop --uninstall           # 删除技能与软链（学习数据不动）
 ```
 
-安装器会做四件事：复制技能文件 → 给脚本加执行位 → 对每个已安装的 agent 建软链 → 打印自测命令。重复执行即升级，软链会保持指向同一份源。
+安装器做四件事：复制技能文件 → 给脚本加执行位 → 对每个已安装的 agent 建软链 → 打印自测命令。重复执行即升级，软链会保持指向同一份源。
 
 ### 不用 Node 的手动安装
 
@@ -60,7 +60,7 @@ ln -s ~/.agents/skills/learn-coach ~/.codex/skills/learn-coach
 ln -s ~/.agents/skills/learn-coach ~/.config/opencode/skills/learn-coach
 ```
 
-（按需只建你实际用到的那些。）
+上述命令供参考，按需执行
 
 ### 验证
 
@@ -76,11 +76,11 @@ bash ~/.agents/skills/learn-coach/scripts/selftest.sh
 @learn-coach list
 ```
 
-说"教我 X / 帮我制定学习计划"也会自动触发。不同 agent 的调用语法略有差异（Codex 也用 `$learn-coach` 或直接提名字）。
+"教我 X / 帮我制定学习计划"也会自动触发。不同 agent 的调用语法略有差异（Codex 也用 `$learn-coach` 或直接提名字）。
 
 ## 数据放在哪
 
-学习记录与技能本体**分离**，升级/换 agent 都不会丢：
+学习记录与技能本体**分离**，升级/换 agent 可继续使用：
 
 ```text
 ${XDG_DATA_HOME:-~/.local/share}/learn-coach/<slug>/
@@ -91,7 +91,7 @@ ${XDG_DATA_HOME:-~/.local/share}/learn-coach/<slug>/
 └── notes/       学习者复述、错题
 ```
 
-可用 `LEARN_HOME` 覆盖根目录。不写系统 tmp（会被清理），不默认写进当前项目（会污染仓库）。
+可用 `LEARN_HOME` 覆盖根目录。
 
 ## 目录结构
 
