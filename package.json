@@ -34,12 +34,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CHANGE_ME/mastery-loop.git"
+    "url": "git+https://github.com/klion26/learn-coach.git"
   },
   "bugs": {
-    "url": "https://github.com/CHANGE_ME/mastery-loop/issues"
+    "url": "https://github.com/klion26/learn-coach/issues"
   },
-  "homepage": "https://github.com/CHANGE_ME/mastery-loop#readme",
+  "homepage": "https://github.com/klion26/learn-coach#readme",
   "scripts": {
     "test": "bash scripts/selftest.sh"
   }

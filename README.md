@@ -54,7 +54,7 @@ npx mastery-loop --uninstall           # 删除技能与软链（学习数据不
 ### 不用 Node 的手动安装
 
 ```sh
-git clone <repo-url> ~/.agents/skills/learn-coach
+git clone https://github.com/klion26/learn-coach.git ~/.agents/skills/learn-coach
 ln -s ~/.agents/skills/learn-coach ~/.claude/skills/learn-coach
 ln -s ~/.agents/skills/learn-coach ~/.codex/skills/learn-coach
 ln -s ~/.agents/skills/learn-coach ~/.config/opencode/skills/learn-coach
@@ -131,7 +131,7 @@ learn-coach/
 npm publish        # 包名 mastery-loop
 ```
 
-`package.json` 的 `bin` 指向 `bin/install.js`，`npx mastery-loop` 即可用。（仓库地址里的 `CHANGE_ME` 记得替换。）
+`package.json` 的 `bin` 指向 `bin/install.js`，`npx mastery-loop` 即可用。
 
 ### HTTP catalog（OpenCode 专属能力）
 
