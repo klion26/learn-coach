@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>知识地图</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fff; --fg:#1b1b1b; --muted:#6b7280; --line:#d8d8d8; --core:#b45309; --ok:#0a7d34; --now:#4a7dff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181d; --fg:#e9e9ea; --muted:#9aa0aa; --line:#333741; } }
+  * { box-sizing:border-box; }
+  body { margin:0 auto; padding:28px 16px; max-width:1000px; background:var(--bg); color:var(--fg);
+         font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB",sans-serif; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:22px; }
+  #board { position:relative; display:flex; gap:56px; align-items:flex-start; overflow-x:auto; padding:8px 4px 20px; }
+  #wires { position:absolute; inset:0; pointer-events:none; overflow:visible; }
+  .lane { display:flex; flex-direction:column; gap:14px; min-width:190px; }
+  .lane h2 { font-size:12px; color:var(--muted); font-weight:500; letter-spacing:.08em; text-transform:uppercase; margin:0 0 2px; }
+  .node { border:1px solid var(--line); border-radius:11px; padding:10px 12px; cursor:pointer; background:var(--bg); position:relative; z-index:1; }
+  .node:hover { border-color:var(--fg); }
+  .node .t { font-weight:600; font-size:15px; }
+  .node .o { color:var(--muted); font-size:13px; margin-top:3px; }
+  .node.core { border-left:3px solid var(--core); }
+  .node.passed { box-shadow:inset 0 0 0 1px var(--ok); }
+  .node.now { box-shadow:inset 0 0 0 2px var(--now); }
+  .badge { font-size:11px; padding:1px 6px; border-radius:999px; border:1px solid var(--line); color:var(--muted); margin-left:6px; vertical-align:2px; }
+  #detail { margin-top:10px; border-top:1px solid var(--line); padding-top:14px; min-height:76px; font-size:15px; }
+  #detail b { display:block; margin-bottom:4px; }
+  .legend { display:flex; gap:18px; flex-wrap:wrap; color:var(--muted); font-size:13px; margin-top:14px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+  .ask { margin-top:16px; padding:12px 14px; border-left:3px solid var(--now); background:color-mix(in srgb, var(--now) 8%, transparent); font-size:14px; }
+</style>
+</head>
+<body>
+<h1 id="title">知识地图</h1>
+<div class="sub" id="sub"></div>
+<div id="board"><svg id="wires"></svg></div>
+<div id="detail"></div>
+<div class="legend">
+  <span><i style="background:#b45309"></i>最小可用核心</span>
+  <span><i style="background:#0a7d34"></i>已通过</span>
+  <span><i style="background:#4a7dff"></i>当前位置</span>
+</div>
+<div class="ask" id="ask"></div>
+
+<script>
+/* ── 只有下面这块需要改 ──────────────────────────────
+   deps 用 id 引用；core:true 标记最小可用核心；
+   status: todo | now | passed | review
+*/
+const MAP = {
+  title: "示例主题 · 全局骨架",
+  sub: "点击任意节点查看它在整体中的位置与产出。先说实话：哪一块你最没把握？",
+  ask: "用你自己的话讲一遍这张图的顺序，然后告诉我哪两个节点最难区分——这两个问题比看懂更重要。",
+  chunks: [
+    { id: "c1", title: "基础概念", outcome: "能用一句话定义核心术语", deps: [], core: true, status: "passed" },
+    { id: "c2", title: "机制 A", outcome: "能画出它如何一步步发生", deps: ["c1"], core: true, status: "now" },
+    { id: "c3", title: "机制 B", outcome: "能预测改变条件后的结果", deps: ["c2"], core: false, status: "todo" },
+    { id: "c4", title: "两者对比", outcome: "能判断某场景该用哪个", deps: ["c2", "c3"], core: true, status: "todo" },
+    { id: "c5", title: "真实场景应用", outcome: "能完成一个完整任务", deps: ["c4"], core: false, status: "todo" }
+  ]
+};
+/* ──────────────────────────────────────────────── */
+
+const depth = {};
+function d(id) {
+  if (depth[id] != null) return depth[id];
+  const n = MAP.chunks.find(c => c.id === id);
+  depth[id] = n.deps.length ? 1 + Math.max(...n.deps.map(d)) : 0;
+  return depth[id];
+}
+MAP.chunks.forEach(c => d(c.id));
+
+const board = document.getElementById('board');
+const svg = document.getElementById('wires');
+document.getElementById('title').textContent = MAP.title;
+document.getElementById('sub').textContent = MAP.sub;
+document.getElementById('ask').textContent = MAP.ask;
+
+const lanes = {};
+MAP.chunks.forEach(c => {
+  const k = depth[c.id];
+  (lanes[k] ||= []).push(c);
+});
+Object.keys(lanes).sort((a, b) => a - b).forEach(k => {
+  const lane = document.createElement('div');
+  lane.className = 'lane';
+  const h = document.createElement('h2');
+  h.textContent = k === '0' ? '起点' : '第 ' + (+k + 1) + ' 层';
+  lane.appendChild(h);
+  lanes[k].forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'node ' + c.status + (c.core ? ' core' : '');
+    el.dataset.id = c.id;
+    el.innerHTML = `<div class="t">${c.title}${c.core ? '<span class="badge">核心</span>' : ''}</div><div class="o">${c.outcome}</div>`;
+    el.onclick = () => show(c);
+    lane.appendChild(el);
+  });
+  board.appendChild(lane);
+});
+
+function show(c) {
+  const deps = c.deps.map(id => MAP.chunks.find(x => x.id === id).title).join('、') || '无';
+  const unlocks = MAP.chunks.filter(x => x.deps.includes(c.id)).map(x => x.title).join('、') || '无';
+  document.getElementById('detail').innerHTML =
+    `<b>${c.title}</b>产出：${c.outcome}<br>前置：${deps} ｜ 解锁：${unlocks}<br>状态：${{todo:'未开始',now:'正在学',passed:'已通过（有测试证据）',review:'待复习'}[c.status]}`;
+  document.querySelectorAll('.node').forEach(n => n.style.outline = n.dataset.id === c.id ? '2px solid var(--fg)' : 'none');
+}
+
+function drawWires() {
+  const r = board.getBoundingClientRect();
+  svg.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
+  svg.style.width = r.width + 'px';
+  svg.style.height = r.height + 'px';
+  svg.innerHTML = '';
+  const box = id => {
+    const el = board.querySelector(`.node[data-id="${id}"]`);
+    const b = el.getBoundingClientRect();
+    return { x: b.left - r.left, y: b.top - r.top, w: b.width, h: b.height };
+  };
+  MAP.chunks.forEach(c => c.deps.forEach(dep => {
+    const a = box(dep), b = box(c.id);
+    if (!a || !b) return;
+    const x1 = a.x + a.w, y1 = a.y + a.h / 2, x2 = b.x, y2 = b.y + b.h / 2, mx = (x1 + x2) / 2;
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+    p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', 'currentColor');
+    p.setAttribute('stroke-opacity', '.28');
+    p.setAttribute('stroke-width', '1.5');
+    svg.appendChild(p);
+  }));
+}
+requestAnimationFrame(drawWires);
+addEventListener('resize', drawWires);
+</script>
+</body>
+</html>

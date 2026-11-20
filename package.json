@@ -1,0 +1,42 @@
+{
+  "name": "learn-coach",
+  "version": "1.0.0",
+  "description": "OpenCode skill: 交互式学习教练 —— 全局骨架 + 分层测验 + 事件驱动复习（认知负荷 / 刻意练习 / SOLO）",
+  "license": "Apache-2.0",
+  "bin": {
+    "learn-coach": "bin/install.js"
+  },
+  "files": [
+    "SKILL.md",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "index.json",
+    "references/",
+    "scripts/",
+    "templates/",
+    "bin/"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "opencode",
+    "skill",
+    "learning",
+    "tutoring",
+    "spaced-repetition",
+    "solo-taxonomy"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CHANGE_ME/learn-coach.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CHANGE_ME/learn-coach/issues"
+  },
+  "homepage": "https://github.com/CHANGE_ME/learn-coach#readme",
+  "scripts": {
+    "test": "bash scripts/selftest.sh"
+  }
+}

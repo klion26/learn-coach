@@ -1,0 +1,24 @@
+{
+  "skills": [
+    {
+      "name": "learn-coach",
+      "version": "1",
+      "files": [
+        "SKILL.md",
+        "README.md",
+        "LICENSE",
+        "NOTICE",
+        "references/theory.md",
+        "references/assessment.md",
+        "references/interaction.md",
+        "references/state.md",
+        "scripts/list.sh",
+        "scripts/record.py",
+        "scripts/review.py",
+        "scripts/selftest.sh",
+        "templates/quiz.html",
+        "templates/map.html"
+      ]
+    }
+  ]
+}

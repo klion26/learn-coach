@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>检查点</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fff; --fg:#1b1b1b; --muted:#666; --line:#d8d8d8; --ok:#0a7d34; --bad:#b3261e; --sel:#e8f0ff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181d; --fg:#e9e9ea; --muted:#9aa0aa; --line:#333741; --sel:#1f2b45; } }
+  * { box-sizing: border-box; }
+  body { margin:0 auto; padding:24px 16px 96px; max-width:760px; background:var(--bg); color:var(--fg);
+         font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB",sans-serif; }
+  header { display:flex; justify-content:space-between; align-items:baseline; gap:12px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+  header b { font-size:15px; letter-spacing:.02em; }
+  #count { color:var(--muted); font-variant-numeric:tabular-nums; }
+  .q { margin:28px 0 8px; font-weight:600; }
+  .tag { font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:1px 8px; margin-left:8px; font-weight:400; vertical-align:2px; }
+  ul { list-style:none; padding:0; margin:14px 0 0; }
+  li { border:1px solid var(--line); border-radius:10px; padding:11px 13px; margin:8px 0; cursor:pointer; display:flex; gap:10px; }
+  li:hover { border-color:var(--muted); }
+  li .k { color:var(--muted); font-variant-numeric:tabular-nums; flex:0 0 1.2em; }
+  li.sel { background:var(--sel); border-color:#4a7dff; }
+  li.ok { border-color:var(--ok); }
+  li.bad { border-color:var(--bad); }
+  .fb { margin-top:12px; padding:11px 13px; border-left:3px solid var(--line); white-space:pre-wrap; display:none; }
+  .fb.show { display:block; }
+  .fb.good { border-color:var(--ok); }
+  .fb.wrong { border-color:var(--bad); }
+  .bar { position:fixed; left:0; right:0; bottom:0; background:var(--bg); border-top:1px solid var(--line); padding:12px 16px;
+         display:flex; gap:10px; justify-content:center; }
+  button { font:inherit; padding:9px 18px; border-radius:9px; border:1px solid var(--line); background:transparent; color:var(--fg); cursor:pointer; }
+  button.primary { background:#4a7dff; border-color:#4a7dff; color:#fff; }
+  button:disabled { opacity:.45; cursor:default; }
+  #score { text-align:center; margin-top:32px; font-weight:600; display:none; }
+  .hint { color:var(--muted); font-size:13px; margin-top:6px; }
+</style>
+</head>
+<body>
+<header><b>检查点</b><span id="count"></span></header>
+<div id="app"></div>
+<div id="score"></div>
+<div class="bar">
+  <button id="submit" class="primary">提交 (Enter)</button>
+  <button id="reset">重做错题</button>
+</div>
+<script>
+/* ── 只有下面这块需要改 ──────────────────────────────
+   multi: true 表示多选。每个选项 ok 标记是否正确，why 是该选项的专属解释。
+   solo: 该题的 SOLO 层级（仅用于复盘，不影响渲染）。
+   explain: 提交后统一解释。
+*/
+const QUIZ = {
+  title: "检查点 1 · 占位标题",
+  questions: [
+    {
+      solo: "unistructural", multi: false,
+      q: "把第一道题写在这里？",
+      options: [
+        { t: "正确选项", ok: true,  why: "对，因为……" },
+        { t: "典型错误选项", ok: false, why: "错在这里：……" },
+        { t: "另一个干扰项", ok: false, why: "混淆了 X 和 Y。" }
+      ],
+      explain: "一句话点明考查的判据。"
+    },
+    {
+      solo: "relational", multi: true,
+      q: "多选示例：以下哪些成立？（可多选）",
+      options: [
+        { t: "A 成立", ok: true,  why: "……" },
+        { t: "B 成立", ok: true,  why: "……" },
+        { t: "C 不成立", ok: false, why: "……" }
+      ],
+      explain: "关联层：说明为什么这几项必然一起出现。"
+    }
+  ]
+};
+/* ──────────────────────────────────────────────── */
+
+const app = document.getElementById('app');
+const countEl = document.getElementById('count');
+const scoreEl = document.getElementById('score');
+const submitBtn = document.getElementById('submit');
+let state = [];   // {answered, correct}
+let picked = [];  // Set per question
+
+function init() {
+  state = QUIZ.questions.map(() => ({ answered: false, correct: false }));
+  picked = QUIZ.questions.map(() => new Set());
+  app.innerHTML = '';
+  scoreEl.style.display = 'none';
+  QUIZ.questions.forEach((q, qi) => {
+    const wrap = document.createElement('section');
+    const h = document.createElement('div');
+    h.className = 'q';
+    h.innerHTML = `${qi + 1}. ${q.q}<span class="tag">${q.solo}${q.multi ? ' · 多选' : ''}</span>`;
+    wrap.appendChild(h);
+    const ul = document.createElement('ul');
+    q.options.forEach((o, oi) => {
+      const li = document.createElement('li');
+      li.dataset.q = qi; li.dataset.o = oi;
+      li.innerHTML = `<span class="k">${oi + 1}</span><span>${o.t}</span>`;
+      li.onclick = () => toggle(qi, oi, li, q.multi);
+      ul.appendChild(li);
+    });
+    wrap.appendChild(ul);
+    const fb = document.createElement('div');
+    fb.className = 'fb'; fb.id = `fb-${qi}`;
+    wrap.appendChild(fb);
+    app.appendChild(wrap);
+  });
+  updateCount();
+  submitBtn.disabled = false;
+}
+
+function toggle(qi, oi, li, multi) {
+  if (state[qi].answered) return;
+  const s = picked[qi];
+  if (multi) { s.has(oi) ? s.delete(oi) : s.add(oi); }
+  else { s.clear(); s.add(oi); }
+  [...li.parentNode.children].forEach((el, i) => el.classList.toggle('sel', s.has(i)));
+}
+
+function submit() {
+  let done = 0, right = 0;
+  QUIZ.questions.forEach((q, qi) => {
+    if (state[qi].answered) { done++; if (state[qi].correct) right++; return; }
+    const s = picked[qi];
+    if (!s.size) return;
+    const oks = q.options.map((o, i) => o.ok ? i : -1).filter(i => i >= 0);
+    const correct = s.size === oks.length && oks.every(i => s.has(i));
+    state[qi] = { answered: true, correct };
+    [...document.querySelectorAll(`li[data-q="${qi}"]`)].forEach((el, i) => {
+      el.classList.remove('sel');
+      if (q.options[i].ok) el.classList.add('ok');
+      else if (s.has(i)) el.classList.add('bad');
+    });
+    const fb = document.getElementById(`fb-${qi}`);
+    const wrongPicked = [...s].filter(i => !q.options[i].ok).map(i => `· ${q.options[i].why}`);
+    const missed = q.options.map((o, i) => o.ok && !s.has(i) ? `· 漏选：${o.t}（${o.why}）` : '').filter(Boolean);
+    const detail = [...wrongPicked, ...missed].join('\n');
+    fb.className = 'fb show ' + (correct ? 'good' : 'wrong');
+    fb.textContent = (correct ? '✓ 通过\n' : '✗ 未通过\n') + (detail ? detail + '\n' : '') + (q.explain || '');
+    done++; if (correct) right++;
+  });
+  if (!done) return;
+  updateCount();
+  if (done === QUIZ.questions.length) {
+    scoreEl.style.display = 'block';
+    scoreEl.textContent = `${right} / ${QUIZ.questions.length} 通过` + (right === QUIZ.questions.length ? ' —— 把结论和理由发回给教练。' : ' —— 说明错题的推理过程，再重做。');
+    submitBtn.disabled = true;
+  }
+}
+
+function updateCount() {
+  const n = state.filter(s => s.answered).length;
+  countEl.textContent = `${n} / ${QUIZ.questions.length}`;
+}
+
+submitBtn.onclick = submit;
+document.getElementById('reset').onclick = () => {
+  init(); // rebuilds state and picked
+};
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { submit(); return; }
+  const n = parseInt(e.key, 10);
+  if (!n) return;
+  const q = QUIZ.questions.findIndex((_, qi) => !state[qi].answered);
+  if (q < 0) return;
+  const li = document.querySelector(`li[data-q="${q}"][data-o="${n - 1}"]`);
+  if (li) toggle(q, n - 1, li, QUIZ.questions[q].multi);
+});
+init();
+</script>
+</body>
+</html>
