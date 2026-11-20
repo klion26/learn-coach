@@ -33,12 +33,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CHANGE_ME/learn-coach.git"
+    "url": "git+https://github.com/klion26/learn-coach.git"
   },
   "bugs": {
-    "url": "https://github.com/CHANGE_ME/learn-coach/issues"
+    "url": "https://github.com/klion26/learn-coach/issues"
   },
-  "homepage": "https://github.com/CHANGE_ME/learn-coach#readme",
+  "homepage": "https://github.com/klion26/learn-coach#readme",
   "scripts": {
     "test": "bash scripts/selftest.sh"
   }
