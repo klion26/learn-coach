@@ -1,7 +1,7 @@
 {
   "name": "learn-coach",
   "version": "1.0.0",
-  "description": "OpenCode skill: 交互式学习教练 —— 全局骨架 + 分层测验 + 事件驱动复习（认知负荷 / 刻意练习 / SOLO）",
+  "description": "通用学习教练 Skill：全局骨架 + 分层测验 + 事件驱动复习（认知负荷 / 刻意练习 / SOLO）。兼容 OpenCode、Claude Code、Codex 等所有 SKILL.md agent",
   "license": "Apache-2.0",
   "bin": {
     "learn-coach": "bin/install.js"
@@ -21,12 +21,15 @@
     "node": ">=18"
   },
   "keywords": [
-    "opencode",
     "skill",
+    "agent-skills",
     "learning",
     "tutoring",
     "spaced-repetition",
-    "solo-taxonomy"
+    "solo-taxonomy",
+    "opencode",
+    "claude",
+    "codex"
   ],
   "repository": {
     "type": "git",

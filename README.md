@@ -1,6 +1,8 @@
 # Learn Coach
 
-一个 OpenCode Skill：把"我想学 X"变成一条**可验证**的学习路径——全局骨架 → 单块循环 → 分层测验 → 跨块整合 → 事件驱动复习。
+一个通用的 **SKILL.md 技能**：把"我想学 X"变成一条**可验证**的学习路径——全局骨架 → 单块循环 → 分层测验 → 跨块整合 → 事件驱动复习。
+
+不绑定具体 agent。OpenCode、Claude Code、Codex，以及任何读取 `SKILL.md` 的工具（Cline、workbuddy、自建 agent…）都能用，靠软链接一份内容分发到各处。
 
 它不追求"讲得更清楚"，而是靠三条硬机制：
 
@@ -10,11 +12,22 @@
 
 License: [Apache-2.0](LICENSE)
 
+## 支持的 agent
+
+| Agent | 技能目录 | 安装方式 |
+| --- | --- | --- |
+| 通用（默认源） | `~/.agents/skills/learn-coach` | 总是装在这里 |
+| OpenCode | `${XDG_CONFIG_HOME:-~/.config}/opencode/skills` | 检测到目录即自动软链 |
+| Claude Code | `~/.claude/skills` | 检测到目录即自动软链 |
+| Codex | `${CODEX_HOME:-~/.codex}/skills` | 检测到目录即自动软链 |
+| 其他（workbuddy / Cline / 自建） | 由你指定 | `--link <它的技能目录>` |
+
+"检测到"指该 agent 的根目录存在（如 `~/.claude`）。没装的工具不会凭空建目录。
+
 ## 依赖
 
 | 依赖 | 说明 |
 | --- | --- |
-| OpenCode V2 | 技能以目录形式提供（`SKILL.md`） |
 | `bash` + `python3` ≥ 3.8 | 状态读写与复习排序，**无第三方包** |
 | Node.js ≥ 18 | 仅安装器需要（`npx` 或 `node bin/install.js`） |
 
@@ -22,41 +35,35 @@ License: [Apache-2.0](LICENSE)
 
 ## 安装
 
-### 方式一：npx（推荐）
+### npx（推荐）
 
 ```sh
-npx learn-coach                 # 装到 ~/.config/opencode/skills/learn-coach
-npx learn-coach --project       # 装到当前项目的 .opencode/skills/learn-coach
-npx learn-coach --dir ~/skills/learn-coach
-npx learn-coach --uninstall
+npx learn-coach                       # 装到 ~/.agents/skills，并软链到检测到的 agent
+npx learn-coach --link ~/.workbuddy/skills   # 额外接入其他 agent（可重复）
+npx learn-coach --project             # 装到项目内：./.agents/skills + ./.opencode、./.claude、./.codex
+npx learn-coach --no-link             # 只装一份，不软链
+npx learn-coach --copy                # 用复制代替软链（Windows / 无符号链接权限）
+npx learn-coach --dry-run             # 只看计划
+npx learn-coach --uninstall           # 删除技能与软链（学习数据不动）
 ```
 
-安装器会复制技能文件、给脚本加执行位，并打印自测命令。升级就是再跑一次（学习数据不受影响）。
+安装器会做四件事：复制技能文件 → 给脚本加执行位 → 对每个已安装的 agent 建软链 → 打印自测命令。重复执行即升级，软链会保持指向同一份源。
 
-### 方式二：git clone
+### 不用 Node 的手动安装
 
 ```sh
-git clone <repo-url> ~/.config/opencode/skills/learn-coach
+git clone <repo-url> ~/.agents/skills/learn-coach
+ln -s ~/.agents/skills/learn-coach ~/.claude/skills/learn-coach
+ln -s ~/.agents/skills/learn-coach ~/.codex/skills/learn-coach
+ln -s ~/.agents/skills/learn-coach ~/.config/opencode/skills/learn-coach
 ```
 
-OpenCode 也会扫描兼容目录：`~/.claude/skills`、`~/.agents/skills`。
+（按需只建你实际用到的那些。）
 
-### 方式三：本地路径登记
-
-```jsonc
-// ~/.config/opencode/opencode.jsonc
-{
-  "$schema": "https://opencode.ai/config.json",
-  "skills": ["~/team-skills/learn-coach"]
-}
-```
-
-相对路径按**当前工作目录**解析，不是按配置文件。
-
-### 验证安装
+### 验证
 
 ```sh
-bash <skill-dir>/scripts/selftest.sh
+bash ~/.agents/skills/learn-coach/scripts/selftest.sh
 ```
 
 ## 使用
@@ -67,11 +74,11 @@ bash <skill-dir>/scripts/selftest.sh
 @learn-coach list
 ```
 
-说"教我 X / 帮我制定学习计划"也会自动触发。
+说"教我 X / 帮我制定学习计划"也会自动触发。不同 agent 的调用语法略有差异（Codex 也用 `$learn-coach` 或直接提名字）。
 
 ## 数据放在哪
 
-学习记录与技能本体**分离**，升级/卸载都不会丢：
+学习记录与技能本体**分离**，升级/换 agent 都不会丢：
 
 ```text
 ${XDG_DATA_HOME:-~/.local/share}/learn-coach/<slug>/
@@ -82,13 +89,13 @@ ${XDG_DATA_HOME:-~/.local/share}/learn-coach/<slug>/
 └── notes/       学习者复述、错题
 ```
 
-可通过 `LEARN_HOME` 覆盖根目录。不写系统 tmp（会被清理），不默认写进当前项目（会污染仓库）。
+可用 `LEARN_HOME` 覆盖根目录。不写系统 tmp（会被清理），不默认写进当前项目（会污染仓库）。
 
 ## 目录结构
 
 ```text
 learn-coach/
-├── SKILL.md              主流程与硬性规则
+├── SKILL.md              主流程与硬性规则（agent 无关）
 ├── references/
 │   ├── theory.md         认知负荷 / 刻意练习 / SOLO / 4C-ID / 范围收敛
 │   ├── assessment.md     分层题干模板、交叉验证协议、裁决规则
@@ -102,8 +109,8 @@ learn-coach/
 ├── templates/
 │   ├── quiz.html         自包含测验组件
 │   └── map.html          自包含知识地图组件
-├── bin/install.js        npx 安装器
-├── index.json            HTTP catalog 清单
+├── bin/install.js        跨 agent 安装器
+├── index.json            HTTP catalog 清单（OpenCode 用）
 └── package.json
 ```
 
@@ -119,43 +126,40 @@ learn-coach/
 ### npm
 
 ```sh
-npm publish        # 包名 learn-coach，发布前请先确认 npm 上是否可用
+npm publish        # 包名 learn-coach，发布前请确认是否可用
 ```
 
-`package.json` 里的 `bin` 指向 `bin/install.js`，所以 `npx learn-coach` 直接可用。仓库地址里的 `CHANGE_ME` 记得替换。
+`package.json` 的 `bin` 指向 `bin/install.js`，`npx learn-coach` 即可用。（仓库地址里的 `CHANGE_ME` 记得替换。）
 
-### HTTP catalog
+### HTTP catalog（OpenCode 专属能力）
 
-OpenCode 支持 `skills` 配置指向一个 HTTP 目录：它会先取 `<base-url>/index.json`，再按 `<base-url>/<name>/<file>` 下载文件。本仓库的 `index.json` 已按此格式写好。
+OpenCode 支持 `skills` 配置指向 HTTP 目录：先取 `<base-url>/index.json`，再按 `<base-url>/<name>/<file>` 下载。其他 agent 没有这个机制，用 npx / git 即可。
 
-**base URL 可以用 GitHub，但要用能直接返回文件内容的入口**，三种都满足「同源 + 可下载」：
+**base URL 可以用 GitHub**，三种入口都满足「同源 + 可直接下载」：
 
-| 入口 | 形式 | 特点 |
+| 入口 | 形式 | 注意 |
 | --- | --- | --- |
-| `raw.githubusercontent.com` | `https://raw.githubusercontent.com/<owner>/<repo>/<ref>` | 最简单；CDN 有缓存，改动后可能延迟几分钟，建议用 tag 或递增 `version` |
-| GitHub Pages | `https://<owner>.github.io/<repo>` | 有构建/部署延迟，但路径干净、可加自定义域 |
+| raw | `https://raw.githubusercontent.com/<owner>/<repo>/<tag>` | 最省事；CDN 有缓存，改动后可能延迟几分钟 |
+| Pages | `https://<owner>.github.io/<repo>` | 部署有延迟，但路径干净、可挂自定义域 |
 | jsDelivr | `https://cdn.jsdelivr.net/gh/<owner>/<repo>@<tag>` | 按 tag 固定版本，缓存可控 |
 
-注意协议要求 **`index.json` 与技能文件同源**，所以不要把 `index.json` 放一个域名、文件放另一个。示例（raw）：
-
-```jsonc
-{
-  "skills": ["https://raw.githubusercontent.com/<owner>/<repo>/v1.0.0"]
-}
-```
-
-对应仓库内布局：
+仓库必须满足目录层级（`index.json` 在 base 根，技能在 `learn-coach/` 下）：
 
 ```text
 <repo>/
 ├── index.json
 └── learn-coach/
     ├── SKILL.md
-    ├── references/…
-    └── scripts/…
+    └── …
 ```
 
-也就是把本目录整体放在 `learn-coach/` 子目录下。**每次改动必须递增 `index.json` 里的 `version`**，否则客户端继续用缓存。
+本仓库根就是技能目录，发 catalog 前先摊平一层：
+
+```sh
+mkdir -p /tmp/catalog && cp index.json /tmp/catalog/ && cp -R . /tmp/catalog/learn-coach
+```
+
+**每次改动都要递增 `index.json` 里的 `version`**，否则客户端继续用缓存。
 
 ## 自测
 
@@ -168,5 +172,6 @@ bash scripts/selftest.sh
 ## 已知限制
 
 - 打开 HTML 用 `open`（macOS）或 `xdg-open`（Linux）；Windows 建议 WSL。
-- 脚本依赖 `python3`；无 PowerShell/批处理版本。
-- 技能 ID 由目录名决定，必须是 `learn-coach`；改名等于换 ID，调用名也要跟着改。
+- 脚本依赖 `python3`，无 PowerShell 版本。
+- Windows 的目录软链需要开发者模式或管理员权限；安装器失败时会自动回退为复制（`--copy` 可强制）。
+- 技能 ID 由目录名决定，必须是 `learn-coach`；改名等于换 ID，各 agent 的调用名也要跟着改。
